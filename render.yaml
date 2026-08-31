@@ -4,7 +4,7 @@ services:
       repo: coder-red/basechatt
       branch: main
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt && pip install -e .
     startCommand: uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     envVars:
