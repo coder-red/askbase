@@ -75,6 +75,7 @@ class Settings(BaseSettings):
     # Database
     #################################################
     database_url: str = "postgresql+asyncpg://basechatt:basechatt@localhost:5433/basechatt"
+    database_ssl: bool = False
     db_pool_size: int = 10
     db_max_overflow: int = 20
     db_pool_timeout: int = 30

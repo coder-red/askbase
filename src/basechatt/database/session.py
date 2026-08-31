@@ -6,6 +6,7 @@ Connection pooling is enabled via the engine; the FastAPI dependency
 
 from __future__ import annotations
 
+import ssl
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from sqlalchemy import text
@@ -22,6 +23,22 @@ from basechatt.observability.logging import get_logger
 
 logger = get_logger("basechatt.database")
 
+
+def _build_connect_args() -> dict:
+    """Build asyncpg ``connect_args``.
+
+    When ``BASECHATT_DATABASE_SSL=true`` we enable TLS via a permissive
+    ``SSLContext`` so that managed Postgres providers (e.g. Render) that
+    require encrypted connections can be reached.
+    """
+    if not settings.database_ssl:
+        return {}
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return {"ssl": ctx}
+
+
 engine: AsyncEngine = create_async_engine(
     settings.database_url,
     pool_size=settings.db_pool_size,
@@ -29,6 +46,7 @@ engine: AsyncEngine = create_async_engine(
     pool_timeout=settings.db_pool_timeout,
     pool_pre_ping=True,
     echo=False,
+    connect_args=_build_connect_args(),
 )
 
 SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
