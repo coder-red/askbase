@@ -1,0 +1,23 @@
+services:
+  - name: basechatt
+    github:
+      repo: coder-red/basechatt
+      branch: main
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn apps.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: BASECHATT_LLM_PROVIDER
+        sync: false
+      - key: BASECHATT_GROQ_API_KEY
+        sync: false
+      - key: BASECHATT_EMBEDDING_PROVIDER
+        value: jina
+        sync: false
+      - key: BASECHATT_DATABASE_URL
+        sync: false
+      - key: BASECHATT_REDIS_URL
+        sync: false
+      - key: BASECHATT_API_KEY
+        sync: false
