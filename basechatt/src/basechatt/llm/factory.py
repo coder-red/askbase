@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from basechatt.llm.embeddings import EmbeddingProvider
 
 
-@lru_cache
 def get_llm_provider(cfg: Settings | None = None) -> LLMProvider:
     cfg = cfg or settings
     from basechatt.llm.providers import GroqProvider, MockProvider, OpenAIProvider
@@ -26,7 +25,6 @@ def get_llm_provider(cfg: Settings | None = None) -> LLMProvider:
     return cls(cfg)
 
 
-@lru_cache
 def get_embedding_provider(cfg: Settings | None = None) -> EmbeddingProvider:
     cfg = cfg or settings
     from basechatt.llm.embeddings import GroqEmbeddingProvider, JinaEmbeddingProvider, MockEmbeddingProvider
