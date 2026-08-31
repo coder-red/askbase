@@ -1,0 +1,145 @@
+# BaseChatt seed company universe.
+#
+# Approximately 20 Nigerian-listed companies spanning banking, financial
+# services, telecommunications, consumer, industrial, energy and healthcare.
+# The universe can be expanded without changing any code — add a new entry and
+# the connectors lookup these identifiers automatically.
+#
+# Fields:
+#   ticker       : NGX ticker symbol (e.g. GTCO)
+#   ngx_symbol   : NGX/long symbol where different from ticker
+#   name         : full legal / brand name
+#   sector       : broad sector label used for filtering
+#   ir_url       : investor-relations page used by the CompanyIR connector
+#   cbn_license  : optional CBN license category (banks)
+#
+# NOTE: identifiers are best-effort public references. The CompanyIR connector
+# falls back to search/discovery when a URL is missing or unreachable.
+
+companies:
+  # ---------------- Banking ----------------
+  - ticker: GTCO
+    ngx_symbol: GTCO
+    name: Guaranty Trust Holding Company Plc
+    sector: banking
+    ir_url: https://gtco.com/investor-relations/
+  - ticker: ZENITHBANK
+    ngx_symbol: ZENITHBANK
+    name: Zenith Bank Plc
+    sector: banking
+    ir_url: https://www.zenithbank.com/investor-relations/
+  - ticker: ACCESS
+    ngx_symbol: ACCESSCORP
+    name: Access Holdings Plc
+    sector: banking
+    ir_url: https://www.accessholdingsplc.com/
+  - ticker: UBA
+    ngx_symbol: UBA
+    name: United Bank for Africa Plc
+    sector: banking
+    ir_url: https://www.ubagroup.com/investor-relations/
+  - ticker: FBNH
+    ngx_symbol: FBNH
+    name: FBN Holdings Plc
+    sector: banking
+    ir_url: https://www.fbnholdings.com/
+  - ticker: FIRSTBANK
+    ngx_symbol: FBNH
+    name: First Bank of Nigeria Limited
+    sector: banking
+    ir_url: https://www.firstbanknigeria.com/
+  - ticker: STANBIC
+    ngx_symbol: STANBIC
+    name: Stanbic IBTC Holdings Plc
+    sector: banking
+    ir_url: https://www.stanbicibtc.com/
+  - ticker: FIDELITYBK
+    ngx_symbol: FIDELITYBK
+    name: Fidelity Bank Plc
+    sector: banking
+    ir_url: https://www.fidelitybank.ng/
+  - ticker: ETI
+    ngx_symbol: ETI
+    name: Ecobank Transnational Incorporated
+    sector: banking
+    ir_url: https://www.ecobank.com/group/investor-relations/
+
+  # ---------------- Financial services ----------------
+  - ticker: NEM
+    ngx_symbol: NEM
+    name: NEM Insurance Plc
+    sector: financial-services
+    ir_url: https://www.neminsuranceplc.com/
+  - ticker: NASCON
+    ngx_symbol: NASCON
+    name: NASCON Allied Industries Plc
+    sector: consumer
+    ir_url: https://www.nasconallied.com/
+
+  # ---------------- Telecommunications ----------------
+  - ticker: MTNN
+    ngx_symbol: MTNN
+    name: MTN Nigeria Communications Plc
+    sector: telecommunications
+    ir_url: https://www.mtn.ng/investor/
+  - ticker: AIRTELAFRI
+    ngx_symbol: AIRTELAFRI
+    name: Airtel Africa Plc
+    sector: telecommunications
+    ir_url: https://www.airtel.africa/investors/
+
+  # ---------------- Consumer ----------------
+  - ticker: NESTLE
+    ngx_symbol: NESTLE
+    name: Nestle Nigeria Plc
+    sector: consumer
+    ir_url: https://www.nestle-cwa.com/en/nestle-nigeria
+  - ticker: UNILEVER
+    ngx_symbol: UNILEVER
+    name: Unilever Nigeria Plc
+    sector: consumer
+    ir_url: https://www.unilever.com/
+  - ticker: DANGSUGAR
+    ngx_symbol: DANGSUGAR
+    name: Dangote Sugar Refinery Plc
+    sector: consumer
+    ir_url: https://www.dangotesugar.com/
+  - ticker: NB
+    ngx_symbol: NB
+    name: Nigerian Breweries Plc
+    sector: consumer
+    ir_url: https://nbplc.com/
+
+  # ---------------- Industrial ----------------
+  - ticker: DANGCEM
+    ngx_symbol: DANGCEM
+    name: Dangote Cement Plc
+    sector: industrial
+    ir_url: https://www.dangotecement.com/
+  - ticker: BUACEMENT
+    ngx_symbol: BUACEMENT
+    name: BUA Cement Plc
+    sector: industrial
+    ir_url: https://www.buacement.com/
+  - ticker: LAFARGE
+    ngx_symbol: WAPCO
+    name: Lafarge Africa Plc
+    sector: industrial
+    ir_url: https://www.lafarge.com.ng/
+
+  # ---------------- Energy ----------------
+  - ticker: SEPLAT
+    ngx_symbol: SEPLAT
+    name: Seplat Energy Plc
+    sector: energy
+    ir_url: https://seplatenergy.com/
+  - ticker: TOTAL
+    ngx_symbol: TOTAL
+    name: TotalEnergies Marketing Nigeria Plc
+    sector: energy
+    ir_url: https://www.totalenergies.com/
+  - ticker: OANDO
+    ngx_symbol: OANDO
+    name: Oando Plc
+    sector: energy
+    ir_url: https://www.oandoPLC.com/

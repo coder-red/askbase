@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.pem
+*.key
+
+# Node / frontend
+node_modules/
+.next/
+out/
+apps/web/.next/
+apps/web/node_modules/
+
+# Data (raw documents, processed docs, tables, databases)
+data/
+basechatt/data/
+*.db
+test_*.db
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs / observability
+logs/
+*.log
+
+# Evaluation artifacts (large, regenerable)
+basechatt/datasets/evaluation/results/

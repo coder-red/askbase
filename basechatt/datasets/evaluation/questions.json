@@ -1,0 +1,110 @@
+[
+  {
+    "id": "macro-gdp-growth-2024",
+    "question": "What was Nigeria's real GDP growth rate for 2024?",
+    "category": "macro",
+    "difficulty": "easy",
+    "expected_answer": "The real GDP growth rate was around 3.4 percent for 2024.",
+    "relevant_document_ids": ["nbs-gdp-q4-2024"],
+    "relevant_chunk_ids": ["nbs-gdp-q4-2024#h-real-gdp-growth"]
+  },
+  {
+    "id": "macro-inflation-core-2024",
+    "question": "What was the core inflation rate in Nigeria in December 2024?",
+    "category": "macro",
+    "difficulty": "easy",
+    "expected_answer": "Core inflation was about 29.3 percent in December 2024.",
+    "relevant_document_ids": ["nbs-cpi-dec-2024"],
+    "relevant_chunk_ids": ["nbs-cpi-dec-2024#h-core-inflation"]
+  },
+  {
+    "id": "macro-mpr-decision-2024",
+    "question": "What did the CBN's Monetary Policy Committee decide about the MPR at its final 2024 meeting?",
+    "category": "central_bank",
+    "difficulty": "medium",
+    "expected_answer": "The MPC raised the Monetary Policy Rate by 25 basis points to 27.50 percent.",
+    "relevant_document_ids": ["cbn-mpr-comm-2024-11"],
+    "relevant_chunk_ids": ["cbn-mpr-comm-2024-11#h-decision"]
+  },
+  {
+    "id": "macro-fx-official-rate",
+    "question": "What was the official exchange rate of the naira against the US dollar at the end of December 2024?",
+    "category": "fx",
+    "difficulty": "easy",
+    "expected_answer": "The official naira/USD exchange rate closed around 1,535 naira per dollar.",
+    "relevant_document_ids": ["cbn-fx-2024-12-31"],
+    "relevant_chunk_ids": ["cbn-fx-2024-12-31#h-official-rate"]
+  },
+  {
+    "id": "macro-nbs-unemployment",
+    "question": "What was Nigeria's unemployment rate as reported by the NBS labour force report?",
+    "category": "macro",
+    "difficulty": "medium",
+    "expected_answer": "The unemployment rate was about 4.3 percent based on the refined methodology.",
+    "relevant_document_ids": ["nbs-lfs-q2-2024"],
+    "relevant_chunk_ids": ["nbs-lfs-q2-2024#h-unemployment"]
+  },
+  {
+    "id": "company-access-holdings-revenue",
+    "question": "What was Access Holdings' gross earnings for the full year 2024?",
+    "category": "company",
+    "difficulty": "medium",
+    "expected_answer": "Access Holdings reported gross earnings of about 4.3 trillion naira for FY 2024.",
+    "relevant_document_ids": ["access-holdings-fy2024-annual"],
+    "relevant_chunk_ids": ["access-holdings-fy2024-annual#h-gross-earnings"]
+  },
+  {
+    "id": "company-dangote-cem-revenue-growth",
+    "question": "What was the revenue growth of Dangote Cement in 2024?",
+    "category": "company",
+    "difficulty": "medium",
+    "expected_answer": "Dangote Cement recorded a 70 percent increase in group revenue, reaching about 3.6 trillion naira.",
+    "relevant_document_ids": ["dangote-cement-fy2024-annual"],
+    "relevant_chunk_ids": ["dangote-cement-fy2024-annual#h-revenue"]
+  },
+  {
+    "id": "company-gtco-pat-q3",
+    "question": "What was Guaranty Trust Holding Company's profit after tax in the third quarter of 2024?",
+    "category": "company",
+    "difficulty": "hard",
+    "expected_answer": "GTCO's profit after tax rose to around 1.0 trillion naira in Q3 2024.",
+    "relevant_document_ids": ["gtco-q3-2024-report"],
+    "relevant_chunk_ids": ["gtco-q3-2024-report#h-pat"]
+  },
+  {
+    "id": "ngx-asi-performance-2024",
+    "question": "How did the NGX All-Share Index perform over 2024?",
+    "category": "market",
+    "difficulty": "medium",
+    "expected_answer": "The NGX All-Share Index returned roughly 37.7 percent in 2024.",
+    "relevant_document_ids": ["ngx-market-report-2024"],
+    "relevant_chunk_ids": ["ngx-market-report-2024#h-asi"]
+  },
+  {
+    "id": "ngx-flour-mills-top-gainers",
+    "question": "Which companies were among the top gainers on the NGX in 2024?",
+    "category": "market",
+    "difficulty": "hard",
+    "expected_answer": "Top gainers included Polycab, PZ Cussons, Northern Nigeria Flour Mills and Wema Bank.",
+    "relevant_document_ids": ["ngx-market-report-2024"],
+    "relevant_chunk_ids": ["ngx-market-report-2024#h-gainers"]
+  },
+  {
+    "id": "sec-filing-requirements",
+    "question": "What are the SEC Nigeria filing requirements for quarterly financial statements?",
+    "category": "regulatory",
+    "difficulty": "easy",
+    "expected_answer": "Public companies must file quarterly unaudited financial statements within 30 days after the end of the quarter.",
+    "relevant_document_ids": ["sec-nigeria-rules-2024"],
+    "relevant_chunk_ids": ["sec-nigeria-rules-2024#h-quarterly-filings"]
+  },
+  {
+    "id": "fmdq-total-bonds-yield",
+    "question": "What was the yield on the FMDQ total bonds index at the end of December 2024?",
+    "category": "market",
+    "difficulty": "hard",
+    "expected_answer": "The FMDQ Total Bonds Index yield was about 21.2 percent at end-December 2024.",
+    "relevant_document_ids": ["fmdq-bonds-2024-12"],
+    "relevant_chunk_ids": ["fmdq-bonds-2024-12#h-yield"]
+  }
+]
