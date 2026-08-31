@@ -29,11 +29,13 @@ def get_llm_provider(cfg: Settings | None = None) -> LLMProvider:
 @lru_cache
 def get_embedding_provider(cfg: Settings | None = None) -> EmbeddingProvider:
     cfg = cfg or settings
-    from basechatt.llm.embeddings import GroqEmbeddingProvider, MockEmbeddingProvider
+    from basechatt.llm.embeddings import GroqEmbeddingProvider, JinaEmbeddingProvider, MockEmbeddingProvider
 
     # Explicit offline mode: deterministic local vectors, no API required.
     if cfg.embedding_provider == "mock":
         return MockEmbeddingProvider(dim=cfg.embedding_dim)
+    if cfg.embedding_provider == "jina":
+        return JinaEmbeddingProvider(cfg)
     if cfg.embedding_provider == "openai_compat":
         return _OpenAICompatEmbeddingProvider(cfg)
     # Backward-compatible default: Groq embeddings when the LLM provider is

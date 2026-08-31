@@ -175,6 +175,17 @@ def parse_pdf(data: bytes) -> ParsedDocument:
 def parse_bytes(content: bytes, mime_type: str) -> ParsedDocument:
     """Route raw bytes to the correct parser based on MIME type."""
     mime = (mime_type or "").lower()
+
+    # Binary office/spreadsheet formats that we can parse structurally.
+    if "openxmlformats-spreadsheet" in mime or mime.endswith("xlsx"):
+        return parse_xlsx(content)
+    if "ms-excel" in mime or "spreadsheetml" in mime:
+        return parse_xlsx(content)
+
+    # Reject obvious binary containers that have no text parser.
+    if _looks_binary(content):
+        return ParsedDocument(title="")
+
     text = content.decode("utf-8", errors="ignore")
     if "html" in mime or "xml" in mime or mime == "":
         if _control_ratio(text) > 0.02:
@@ -198,6 +209,55 @@ def parse_bytes(content: bytes, mime_type: str) -> ParsedDocument:
     except Exception as e:  # noqa: BLE001
         logger.warning("Generic parse failed: %s", e)
         return ParsedDocument(title="")
+
+
+def parse_xlsx(data: bytes) -> ParsedDocument:
+    """Parse an .xlsx workbook into per-sheet tables and text.
+
+    Spreadsheets are tabular by nature, so each worksheet becomes a
+    ``ParsedTable`` (headers + rows) and a flattened text section. This turns
+    SEC/statistical bulletins into genuinely searchable chunks instead of raw
+    zip-binary junk.
+    """
+    import io
+
+    from openpyxl import load_workbook
+
+    doc = ParsedDocument(title="")
+    try:
+        wb = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("XLSX parse failed: %s", e)
+        return doc
+    for ws in wb.worksheets:
+        title = ws.title or ""
+        rows: list[list[str]] = []
+        for row in ws.iter_rows(values_only=True):
+            cells = ["" if c is None else str(c).strip() for c in row]
+            if not any(cells):
+                continue
+            rows.append(cells)
+            lineno = len(rows)
+            doc.sections.append(
+                ParsedSection(title=f"{title} row {lineno}", level=1,
+                              text=" | ".join(cells))
+            )
+        headers = rows[0] if rows else []
+        body = rows[1:] if rows else []
+        if rows:
+            doc.tables.append(ParsedTable(title=title, headers=headers, rows=body))
+    wb.close()
+    return doc
+
+
+def _looks_binary(data: bytes) -> bool:
+    """Detect known binary containers (zip/office/exe/pdf-like magic bytes)."""
+    if len(data) < 4:
+        return False
+    for magic in (b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"):
+        if data.startswith(magic):
+            return True
+    return False
 
 
 def _control_ratio(sample: str) -> float:

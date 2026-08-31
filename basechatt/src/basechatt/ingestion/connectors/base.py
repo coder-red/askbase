@@ -17,6 +17,7 @@ from tenacity import (
 )
 
 from basechatt.database.models import AuthorityLevel, DocumentType
+from basechatt.config.settings import settings
 
 
 @dataclass
@@ -89,12 +90,16 @@ class SourceConnector(ABC):
     @retry(
         retry=retry_if_exception_type(httpx.TransportError),
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1.5, min=1, max=30),
+        wait=wait_exponential(multiplier=settings.backoff_base, min=1, max=30),
         reraise=True,
     )
     async def _http_get(self, url: str, **kwargs: Any) -> httpx.Response:
+        timeout = httpx.Timeout(
+            settings.http_timeout, connect=10.0, pool=10.0
+        )
+        kwargs.setdefault("timeout", timeout)
         client = self.client or httpx.AsyncClient(
-            timeout=60.0,
+            timeout=timeout,
             headers={"User-Agent": self._user_agent()},
             follow_redirects=True,
         )

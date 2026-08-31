@@ -91,6 +91,58 @@ class GroqEmbeddingProvider(EmbeddingProvider):
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+class JinaEmbeddingProvider(EmbeddingProvider):
+    """Jina AI embeddings via their OpenAI-compatible endpoint.
+
+    ``jina-embeddings-v3`` supports configurable output dimensions which lets us
+    keep the existing pgvector ``vector(768)`` column. Uses a free-tier API key;
+    no local compute required.
+    """
+
+    def __init__(self, cfg: Settings | None = None) -> None:
+        self.cfg = cfg or settings
+        self._client: AsyncOpenAI | None = None
+        self._dim = self.cfg.embedding_dim
+
+    def _client_or_raise(self) -> AsyncOpenAI:
+        if self._client is None:
+            key = self.cfg.jina_api_key or os.getenv("JINA_API_KEY")
+            if not key:
+                raise RuntimeError(
+                    "Jina API key is not configured. Set BASECHATT_JINA_API_KEY "
+                    "or JINA_API_KEY, or switch embedding_provider away from jina."
+                )
+            self._client = AsyncOpenAI(
+                api_key=key,
+                base_url=self.cfg.jina_base_url,
+            )
+        return self._client
+
+    async def embed_batch(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        client = self._client_or_raise()
+        resp = await client.embeddings.create(
+            model=self.cfg.jina_embedding_model,
+            input=texts,
+            encoding_format="float",
+            dimensions=self._dim,
+        )
+        data = sorted(resp.data, key=lambda d: d.index)
+        return [list(d.embedding) for d in data]
+
+    async def embed_text(self, text: str) -> list[float]:
+        out = await self.embed_batch([text])
+        return out[0]
+
+    @property
+    def dim(self) -> int:
+        return self._dim
+
+    def cache_key(self, text: str) -> str:
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 class MockEmbeddingProvider(EmbeddingProvider):
     """Deterministic pseudo-embedding for tests/offline runs.
 

@@ -48,16 +48,19 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048
 
     #################################################
-    # Embedding provider: groq | openai_compat | mock
+    # Embedding provider: groq | openai_compat | jina | mock
     # "mock" = deterministic offline vectors (no API needed)
     #################################################
-    embedding_provider: Literal["groq", "openai_compat", "mock"] = "groq"
+    embedding_provider: Literal["groq", "openai_compat", "jina", "mock"] = "groq"
+    jina_api_key: str = ""
+    jina_base_url: str = "https://api.jina.ai/v1"
+    jina_embedding_model: str = "jina-embeddings-v3"
 
     #################################################
     # Embeddings (via provider API, $0 free tier)
     #################################################
     embedding_model: str = "nomic-embed-text-v1.5"
-    embedding_dim: int = 768  # nomic-embed-text v1.5 outputs 768-d vectors
+    embedding_dim: int = 768  # dimensions requested from the embedding API
     embedding_batch_size: int = 32
     embedding_cache_ttl: int = 3600
 
