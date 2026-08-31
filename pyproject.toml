@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "basechatt"
 version = "0.1.0"
-description = "BaseChatt — an AI financial research analyst for the Nigerian economy, markets, and companies"
+description = "BaseChatt ΓÇö an AI financial research analyst for the Nigerian economy, markets, and companies"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }

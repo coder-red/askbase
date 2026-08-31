@@ -1,6 +1,6 @@
 # BaseChatt
 
-BaseChatt — an AI financial research analyst for the Nigerian economy, markets,
+BaseChatt ΓÇö an AI financial research analyst for the Nigerian economy, markets,
 and companies. Ask questions in plain English and get answers grounded in
 primary sources (the CBN, NBS, SEC Nigeria, NGX, FMDQ and company investor
 relations releases) with citations and a verification verdict.
@@ -11,18 +11,18 @@ retrieved evidence before it is returned or persisted as a citation.
 
 ## Features
 
-- **Hybrid retrieval** — dense (embedding) + lexical (pgvector `tsvector`)
+- **Hybrid retrieval** ΓÇö dense (embedding) + lexical (pgvector `tsvector`)
   fusion with RRF and a deterministic reranker (authority + freshness).
-- **Agentic research** — a LangGraph pipeline: retrieve → answer → verify,
+- **Agentic research** ΓÇö a LangGraph pipeline: retrieve ΓåÆ answer ΓåÆ verify,
   supporting follow-up queries when evidence is weak.
-- **Multi-source ingestion** — six registered connectors (`cbn`, `nbs`,
+- **Multi-source ingestion** ΓÇö six registered connectors (`cbn`, `nbs`,
   `sec_nigeria`, `ngx`, `fmdq`, `company_ir`) with dedup, versioning,
   chunking and embedding.
-- **Verification & citations** — every answer carries a supported / not
+- **Verification & citations** ΓÇö every answer carries a supported / not
   supported verdict plus the evidence it is grounded on.
-- **Evaluation harness** — curated Nigerian-finance questions with
+- **Evaluation harness** ΓÇö curated Nigerian-finance questions with
   recall@k / MRR / token-F1 reporting (`basechatt eval`).
-- **HTTP API** — FastAPI with API-key auth and rate limiting.
+- **HTTP API** ΓÇö FastAPI with API-key auth and rate limiting.
 
 ## Quick start
 
@@ -131,7 +131,7 @@ make typecheck # mypy src                     (optional)
 
 - The default LLM/embedding provider is **Groq** (free tier, no local
   downloads). Set `BASECHATT_LLM_PROVIDER=mock` for fully offline test runs.
-- Embedding dimension is fixed at 768 (`BASECHATT_EMBEDDING_DIM`) — changing
+- Embedding dimension is fixed at 768 (`BASECHATT_EMBEDDING_DIM`) ΓÇö changing
   it after initial ingest requires a re-embed of the corpus.
 - Ports are intentionally host-mapped to `5433` (Postgres) and `6380` (Redis)
   so they don't collide with system services.
