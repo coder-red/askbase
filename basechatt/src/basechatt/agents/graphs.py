@@ -14,7 +14,7 @@ from typing import TypedDict
 from langgraph.graph import END, START, StateGraph
 
 from basechatt.agents.state import ResearchState
-from basechatt.agents.tools import answer_node, retrieve_node, verify_node
+from basechatt.agents.tools import answer_node, retrieve_node, verify_node, web_search_node
 from basechatt.observability.logging import get_logger
 
 logger = get_logger("basechatt.agents.graphs")
@@ -39,11 +39,13 @@ def build_graph():
     g = StateGraph(ResearchState)
 
     g.add_node("retrieve", retrieve_node)
+    g.add_node("web_search", web_search_node)
     g.add_node("answer", answer_node)
     g.add_node("verify", verify_node)
 
     g.add_edge(START, "retrieve")
-    g.add_edge("retrieve", "answer")
+    g.add_edge("retrieve", "web_search")
+    g.add_edge("web_search", "answer")
     g.add_edge("answer", "verify")
     g.add_edge("verify", END)
 
@@ -65,4 +67,5 @@ async def run_research(state: ResearchState) -> ResearchState:
         state.answer = result.get("answer")
         state.retrieval = result.get("retrieval")
         state.metadata = result.get("metadata", {})
+        state.web_evidence = result.get("web_evidence", [])
     return state

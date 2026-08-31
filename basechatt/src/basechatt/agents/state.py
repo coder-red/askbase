@@ -63,3 +63,4 @@ class ResearchState:
     retrieval: HybridResponse | None = None
     effort: str = "balanced"
     metadata: dict = field(default_factory=dict)
+    web_evidence: list[Evidence] = field(default_factory=list)

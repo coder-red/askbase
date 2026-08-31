@@ -21,6 +21,7 @@ from basechatt.llm.factory import get_llm_provider
 from basechatt.observability.logging import get_logger
 from basechatt.retrieval.filters import RetrievalFilters
 from basechatt.retrieval.hybrid import hybrid_search
+from basechatt.search.web import needs_web_search, search_web
 
 logger = get_logger("basechatt.agents.tools")
 
@@ -67,10 +68,46 @@ async def retrieve_node(state: ResearchState) -> ResearchState:
     return state
 
 
+async def web_search_node(state: ResearchState) -> ResearchState:
+    """Search the live web for current information not in the local index."""
+    local_count = state.metadata.get("evidence_count", 0)
+    query = state.query
+    if state.company_ticker:
+        query = f"{query} {state.company_ticker}"
+
+    use_web = await needs_web_search(query, local_count)
+    state.metadata["web_search_triggered"] = use_web
+    if not use_web:
+        return state
+
+    logger.info("web search triggered: %r", query)
+    response = await search_web(query, max_results=6)
+    state.web_evidence = [
+        Evidence(
+            chunk_id=f"web-{i}",
+            document_id=f"web-{i}",
+            title=r.title,
+            source_code="web",
+            source_name="Web Search",
+            authority_level="WEB",
+            text=r.snippet,
+            source_url=r.url,
+            score=0.5,
+        )
+        for i, r in enumerate(response.results)
+    ]
+    state.metadata["web_result_count"] = len(response.results)
+    return state
+
+
 async def answer_node(state: ResearchState) -> ResearchState:
-    if not state.retrieval or not state.retrieval.results:
+    local_evidence = _evidence_from_retrieval(state.retrieval) if state.retrieval and state.retrieval.results else []
+    web_evidence = state.web_evidence or []
+    evidence = local_evidence + web_evidence
+
+    if not evidence:
         state.answer = Answer(
-            text="I could not find sufficient evidence in the indexed corpus to "
+            text="I could not find sufficient evidence in the indexed corpus or on the web to "
                  "answer this query confidently.",
             is_satisfactory=False,
             evidence=[],
@@ -78,9 +115,14 @@ async def answer_node(state: ResearchState) -> ResearchState:
         )
         return state
 
-    evidence = _evidence_from_retrieval(state.retrieval)
     provider = get_llm_provider()
-    user = build_user_prompt(state.query, evidence, plan=PLAN)
+    web_note = ""
+    if web_evidence:
+        web_note = (
+            "\n\nNote: some evidence below comes from a live web search and may not be "
+            "authoritative; prefer local indexed sources where they cover the question."
+        )
+    user = build_user_prompt(state.query, evidence, plan=PLAN) + web_note
     started = time.perf_counter()
     try:
         resp = await provider.chat(SYSTEM_RESEARCHER, user)
@@ -114,6 +156,8 @@ async def answer_node(state: ResearchState) -> ResearchState:
         citations=citations,
         elapsed_ms=(time.perf_counter() - started) * 1000,
     )
+    state.metadata["local_evidence_count"] = len(local_evidence)
+    state.metadata["web_evidence_count"] = len(web_evidence)
     return state
 
 
