@@ -148,6 +148,10 @@ async def answer_node(state: ResearchState) -> ResearchState:
         and checks["number_claims"] <= len(citations) * 2 + 2
     )
 
+    # Clean LLM artifacts: replace double-question-marks that the LLM uses
+    # to render the Nigerian Naira sign (₦) when its tokenizer can't encode it.
+    answer_text = _clean_naira(answer_text)
+
     state.answer = Answer(
         text=answer_text,
         is_satisfactory=satisfactory,
@@ -254,3 +258,25 @@ def _parse_verdict(text: str) -> dict:
         if "unsupported" in text:
             return {"verdict": "unsupported"}
         return {"verdict": "unverifiable"}
+
+
+def _clean_naira(text: str) -> str:
+    """Replace LLM artifacts for the Nigerian Naira sign (₦) with the correct character.
+
+    Groq/LLaMA tokenizers struggle with ₦ (U+20A6) and often emit the literal
+    two-character sequence '??' or '??' instead. We reverse those substitutions.
+    Also strip any stray Unicode replacement characters (U+FFFD).
+    """
+    if not text:
+        return text
+    # Strip U+FFFD replacement characters (usually from encoding failures).
+    text = text.replace("\ufffd", "")
+    # Replace ?? (two consecutive question marks) used as Naira stand-in.
+    # Only replace when flanked by digits/space (amount context), not arbitrary text.
+    text = re.sub(r"(\d+)\?\?(\d)", r"\1₦\2", text)          # 10??5 → 10₦5 (amounts)
+    text = re.sub(r"(\s)??(\d)", r"\1₦\2", text)             # space??5 → space₦5
+    text = re.sub(r"N(\d)", r"₦\1", text)                     # N99 → ₦99
+    text = re.sub(r"??", "₦", text)                           # remaining ?? → ₦
+    # Clean up any leftover orphan ? from broken sequences.
+    text = re.sub(r"\?(\s|$)", r"₦\1", text)
+    return text
