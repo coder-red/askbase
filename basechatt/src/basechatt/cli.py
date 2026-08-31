@@ -418,6 +418,12 @@ def _report_evaluation(results: dict) -> None:
     summary = results["summary"]
     print(f"questions evaluated: {summary['questions_evaluated']}")
     print(f"supported answers:   {summary['supported_count']}")
+    print("\nper-question verdict:")
+    for r in results.get("per_question", []):
+        verdict = r.get("verdict", "error")
+        marker = "OK" if verdict == "supported" else ".."
+        qid = r.get("question", "")[:70]
+        print(f"  [{marker}] {verdict:<10} f1={r.get('f1', 0):.2f}  {qid}")
 
 
 if __name__ == "__main__":

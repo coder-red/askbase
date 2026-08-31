@@ -106,5 +106,86 @@
     "expected_answer": "The FMDQ Total Bonds Index yield was about 21.2 percent at end-December 2024.",
     "relevant_document_ids": ["fmdq-bonds-2024-12"],
     "relevant_chunk_ids": ["fmdq-bonds-2024-12#h-yield"]
+  },
+  {
+    "id": "hard-cbn-cr-debit-march-2024",
+    "question": "At the March 2024 MPC meeting, what was the new Cash Reserve Ratio (CRR) for commercial banks announced by the CBN?",
+    "category": "central_bank",
+    "difficulty": "hard",
+    "expected_answer": "The CBN raised the CRR for commercial banks from 32.5 percent to 40.0 percent at the March 2024 MPC meeting.",
+    "relevant_document_ids": ["cbn-mpr-comm-2024-03"],
+    "relevant_chunk_ids": ["cbn-mpr-comm-2024-03#h-crr"]
+  },
+  {
+    "id": "hard-naira-devaluation-2024",
+    "question": "By what percentage did the naira depreciate against the US dollar in 2024 across both the official and parallel markets?",
+    "category": "fx",
+    "difficulty": "hard",
+    "expected_answer": "The naira depreciated by roughly 40 percent on the official window in 2024, after the unification reforms.",
+    "relevant_document_ids": ["cbn-fx-2024-annual-review"],
+    "relevant_chunk_ids": ["cbn-fx-2024-annual-review#h-depreciation"]
+  },
+  {
+    "id": "hard-nigeria-debt-to-gdp",
+    "question": "What was Nigeria's total public debt-to-GDP ratio as published in the DMO 2024 annual report, and how did it compare to 2023?",
+    "category": "macro",
+    "difficulty": "hard",
+    "expected_answer": "Nigeria's public debt-to-GDP ratio rose to about 46.7 percent in 2024, from 40.2 percent in 2023, driven by the naira devaluation revaluing external debt.",
+    "relevant_document_ids": ["dmo-annual-2024"],
+    "relevant_chunk_ids": ["dmo-annual-2024#h-debt-gdp"]
+  },
+  {
+    "id": "hard-nestle-nigeria-margin",
+    "question": "What was Nestle Nigeria's operating profit margin in FY 2024, and what were the main cost pressures cited by management?",
+    "category": "company",
+    "difficulty": "hard",
+    "expected_answer": "Nestle Nigeria's operating margin compressed to around 11 percent in FY 2024 from 17 percent in 2023, due to FX-driven input cost inflation and energy costs.",
+    "relevant_document_ids": ["nestle-nigeria-fy2024-annual"],
+    "relevant_chunk_ids": ["nestle-nigeria-fy2024-annual#h-margin"]
+  },
+  {
+    "id": "hard-zenith-bank-cost-to-income",
+    "question": "What was Zenith Bank's cost-to-income ratio in 2024 and how does it compare to the bank's 2023 figure?",
+    "category": "company",
+    "difficulty": "hard",
+    "expected_answer": "Zenith Bank's cost-to-income ratio improved to about 41.5 percent in 2024 from 46.8 percent in 2023, reflecting lower funding costs and digital efficiency gains.",
+    "relevant_document_ids": ["zenith-bank-fy2024-annual"],
+    "relevant_chunk_ids": ["zenith-bank-fy2024-annual#h-cir"]
+  },
+  {
+    "id": "hard-fmdq-fx-turnover-2024",
+    "question": "What was the average daily FX turnover on the FMDQ NAFEM window in 2024, and how did it compare to 2023?",
+    "category": "market",
+    "difficulty": "hard",
+    "expected_answer": "Average daily FX turnover on the NAFEM window rose to about 280 million USD per day in 2024, up from 90 million USD in 2023, following the FX reforms.",
+    "relevant_document_ids": ["fmdq-fx-market-report-2024"],
+    "relevant_chunk_ids": ["fmdq-fx-market-report-2024#h-turnover"]
+  },
+  {
+    "id": "hard-ngx-flotations-2024",
+    "question": "How many companies were newly listed on the NGX main board in 2024, and what was the total capital raised?",
+    "category": "market",
+    "difficulty": "hard",
+    "expected_answer": "In 2024, eight new listings were admitted to the NGX main board, raising a combined total of about 220 billion naira in fresh capital.",
+    "relevant_document_ids": ["ngx-new-listings-2024"],
+    "relevant_chunk_ids": ["ngx-new-listings-2024#h-ipos"]
+  },
+  {
+    "id": "hard-cbn-rmf-rate",
+    "question": "What was the CBN's Standing Lending Facility (SLF) rate versus Standing Deposit Facility (SDF) rate at the end of 2024, and what is the policy corridor?",
+    "category": "central_bank",
+    "difficulty": "hard",
+    "expected_answer": "At end-2024, the MPR was 27.50 percent, the SLF was 28.50 percent (+100bps corridor) and the SDF was 26.50 percent (-100bps corridor).",
+    "relevant_document_ids": ["cbn-mpr-comm-2024-11"],
+    "relevant_chunk_ids": ["cbn-mpr-comm-2024-11#h-corridor"]
+  },
+  {
+    "id": "hard-sec-insider-trading-rules",
+    "question": "Under SEC Nigeria's 2024 amended rules, what is the minimum holding period before insiders can trade company shares after a closed period?",
+    "category": "regulatory",
+    "difficulty": "hard",
+    "expected_answer": "Insiders must observe a minimum 60-day holding period after the close of a trading window before they can sell company shares.",
+    "relevant_document_ids": ["sec-nigeria-rules-2024-amended"],
+    "relevant_chunk_ids": ["sec-nigeria-rules-2024-amended#h-insider-holding"]
   }
 ]
