@@ -44,6 +44,11 @@ SOURCE_TIMEOUT_SECONDS = 480.0
 # hammering source servers or exhausting CPU during PDF parsing.
 MAX_CONCURRENT_DOCS = 6
 
+# Hard cap on the number of discovered documents per source per sync run.
+# Without this, a noisy connector (e.g. FMDQ's bond listings) can return hundreds
+# of PDFs and stall the pipeline for hours even with timeouts.
+MAX_DOCS_PER_SOURCE = 30
+
 
 def _clean_title(title: str, limit: int = 480) -> str:
     """Collapse whitespace and cap length so long page titles never overflow."""
@@ -194,8 +199,7 @@ async def _run_source_sync_inner(session: AsyncSession, source_code: str) -> dic
         await session.commit()
         return {"source": source_code, "status": "failed", "error": str(e)}
 
-    # Fan out all discovered docs in parallel (bounded by semaphore).
-    # Each task uses its own DB session so concurrent SQLAlchemy work is safe.
+    discovered = discovered[:MAX_DOCS_PER_SOURCE]
     from basechatt.database.session import SessionLocal
 
     added_list: list = []
