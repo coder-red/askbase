@@ -7,8 +7,11 @@ fully idempotent (unchanged documents are never re-downloaded/processed).
 
 from __future__ import annotations
 
+import asyncio
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from basechatt.config.settings import settings
 from basechatt.database.models import (
     ProcessingStatus,
     SyncStatus,
@@ -29,6 +32,14 @@ from basechatt.workers.ingestion import process_version
 
 logger = get_logger("basechatt.ingestion.pipeline")
 
+# Per-document processing timeout.  We do this in-process (no worker queue) so
+# that one stuck PDF cannot block the whole sync.
+DOC_TIMEOUT_SECONDS = 45.0
+
+# Overall per-source sync timeout.  Prevents a source with many slow docs from
+# blocking indefinitely.  A timed-out source is marked FAILED.
+SOURCE_TIMEOUT_SECONDS = 600.0
+
 
 def _clean_title(title: str, limit: int = 480) -> str:
     """Collapse whitespace and cap length so long page titles never overflow."""
@@ -38,6 +49,25 @@ def _clean_title(title: str, limit: int = 480) -> str:
 
 async def run_source_sync(session: AsyncSession, source_code: str) -> dict:
     """Run a full sync for one source. Returns summary counters."""
+    try:
+        return await asyncio.wait_for(
+            _run_source_sync_inner(session, source_code),
+            timeout=SOURCE_TIMEOUT_SECONDS,
+        )
+    except asyncio.TimeoutError:
+        logger.error("sync %s timed out after %.0fs", source_code, SOURCE_TIMEOUT_SECONDS)
+        try:
+            await session.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+        return {
+            "source": source_code,
+            "status": "failed",
+            "error": f"source sync timed out after {SOURCE_TIMEOUT_SECONDS:.0f}s",
+        }
+
+
+async def _run_source_sync_inner(session: AsyncSession, source_code: str) -> dict:
     source_repo = SourceRepository(session)
     company_repo = CompanyRepository(session)
     doc_repo = DocumentRepository(session)
@@ -125,7 +155,16 @@ async def run_source_sync(session: AsyncSession, source_code: str) -> dict:
 
         # Process asynchronously but bounded. We inline process to keep the
         # sync deterministic; a failed version marks itself FAILED.
-        await process_version(session, version.id)
+        # Wrap with a per-document timeout so a stuck PDF does not block the sync.
+        try:
+            await asyncio.wait_for(
+                process_version(session, version.id),
+                timeout=DOC_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("process_version timed out for %s — marking FAILED", doc.url)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("process_version failed for %s: %s", doc.url, e)
         await session.commit()
 
     await sync_repo.finish(
