@@ -1,137 +1,131 @@
 # BaseChatt
 
-BaseChatt ΓÇö an AI financial research analyst for the Nigerian economy, markets,
-and companies. Ask questions in plain English and get answers grounded in
-primary sources (the CBN, NBS, SEC Nigeria, NGX, FMDQ and company investor
-relations releases) with citations and a verification verdict.
+An AI financial research tool for Nigeria.
 
-The system retrieves from a RAG index (pgvector + hybrid search), routes
-through a LangGraph research agent, and verifies each answer against the
-retrieved evidence before it is returned or persisted as a citation.
+Ask a question in plain English. Get an answer grounded in real data from the CBN, NBS, SEC Nigeria, NGX, FMDQ, and company investor relations.
 
-## Features
+## What it does
 
-- **Hybrid retrieval** ΓÇö dense (embedding) + lexical (pgvector `tsvector`)
-  fusion with RRF and a deterministic reranker (authority + freshness).
-- **Agentic research** ΓÇö a LangGraph pipeline: retrieve ΓåÆ answer ΓåÆ verify,
-  supporting follow-up queries when evidence is weak.
-- **Multi-source ingestion** ΓÇö six registered connectors (`cbn`, `nbs`,
-  `sec_nigeria`, `ngx`, `fmdq`, `company_ir`) with dedup, versioning,
-  chunking and embedding.
-- **Verification & citations** ΓÇö every answer carries a supported / not
-  supported verdict plus the evidence it is grounded on.
-- **Evaluation harness** ΓÇö curated Nigerian-finance questions with
-  recall@k / MRR / token-F1 reporting (`basechatt eval`).
-- **HTTP API** ΓÇö FastAPI with API-key auth and rate limiting.
+- Pulls documents from six public Nigerian data sources
+- Chunks and embeds them into a search index (Postgres + pgvector)
+- Runs your question through a research agent that retrieves evidence, writes an answer, and checks itself
+- Returns the answer with citations and a yes/no support verdict
+
+## How it works
+
+1. A LangGraph agent gets your query
+2. It searches the vector index using both semantic and keyword search
+3. It writes an answer using only the retrieved evidence
+4. It checks whether the evidence actually supports the answer
+5. It returns the answer, citations, and the verdict
 
 ## Quick start
 
-Requires Python 3.12, Docker (for Postgres + Redis).
+Needs Python 3.12 and Docker.
 
 ```bash
-# 1. Install
+# install
 python -m venv .venv
-.venv/bin/pip install -e ".[dev]"      # Windows: .venv\Scripts\pip install -e ".[dev]"
+.venv\Scripts\pip install -e ".[dev]"
 
-# 2. Configure
-cp .env.example .env
-# set BASECHATT_GROQ_API_KEY (free tier here: https://console.groq.com)
+# set up env
+copy .env.example .env
+# add your BASECHATT_GROQ_API_KEY (free at https://console.groq.com)
 
-# 3. Start Postgres (pgvector) + Redis on their non-default ports
-make db-up                                 # docker compose up -d postgres redis
+# start postgres and redis
+make db-up
 
-# 4. Create the schema and seed companies/sources
-make seed                                  # runs init-db, then python -m basechatt.cli seed
+# create tables and seed companies
+make seed
 
-# 5. Ingest documents from all sources
-make sync                                  # python -m basechatt.cli sync
+# pull documents from the sources
+make sync
 
-# 6. Run the API (docs at http://127.0.0.1:8000/docs)
-make run                                   # uvicorn apps.api.main:app --reload
+# run the API (http://127.0.0.1:8000/docs)
+make run
 ```
 
-## Using the CLI
+## CLI
 
 ```bash
-# Ask the research agent a question
+# ask a question
 python -m basechatt.cli ask "What was Nigeria's GDP growth in 2024?"
-python -m basechatt.cli ask "How did GTCO's PAT move in Q3 2024?" --company GTCO --json
+python -m basechatt.cli ask "How did GTCO's profit move in Q3 2024?" --company GTCO
 
-# Sync a single source
+# sync one source
 python -m basechatt.cli sync cbn
 python -m basechatt.cli sync-status
 
-# Evaluation
-python -m basechatt.cli seed-eval          # load datasets/evaluation/questions.json
-python -m basechatt.cli eval               # run the harness (--mock for offline)
-python -m basechatt.cli doctor             # environment checks
+# run evaluation
+python -m basechatt.cli seed-eval
+python -m basechatt.cli eval
+python -m basechatt.cli eval --mock
+
+# check your setup
+python -m basechatt.cli doctor
 ```
 
 ## HTTP API
 
-All endpoints are under `/api/v1`. When `BASECHATT_API_KEY` is set, send the
-key via the `X-API-Key` header (otherwise auth is open in development).
+All endpoints are under `/api/v1`. If you set `BASECHATT_API_KEY`, send it as the `X-API-Key` header. Without a key, auth is open (dev only).
 
-| Method | Path                          | Description                          |
-| ------ | ----------------------------- | ------------------------------------ |
-| GET    | `/api/v1/health`              | Service + database health            |
-| POST   | `/api/v1/query`               | Run the research agent on a question |
-| GET    | `/api/v1/sync/status`         | Latest sync run per source           |
-| POST   | `/api/v1/sync`                | Trigger sync for all / some sources  |
-| POST   | `/api/v1/sync/{source}`       | Trigger sync for one source          |
-| GET    | `/api/v1/documents`           | List indexed documents (filters)     |
-| GET    | `/api/v1/companies`           | List the seeded company universe     |
-| GET    | `/api/v1/sources`             | List registered sources              |
-| GET    | `/api/v1/metrics`             | In-process latency / counter summary |
-| POST   | `/api/v1/calculate`           | Growth, CAGR, margin & ratio math    |
-| GET    | `/api/v1/evaluation/results`  | Last evaluation runs                 |
+| Method | Path                         | What it does                        |
+| ------ | ---------------------------- | ----------------------------------- |
+| GET    | /api/v1/health               | Service and database health         |
+| POST   | /api/v1/query                | Run the research agent              |
+| GET    | /api/v1/sync/status          | Latest sync run per source          |
+| POST   | /api/v1/sync                 | Trigger sync for all or some sources |
+| POST   | /api/v1/sync/{source}        | Trigger sync for one source         |
+| GET    | /api/v1/documents            | List indexed documents              |
+| GET    | /api/v1/companies            | List seeded companies               |
+| GET    | /api/v1/sources              | List registered sources             |
+| GET    | /api/v1/metrics              | Latency and counter summary         |
+| POST   | /api/v1/calculate            | Growth, CAGR, margin, ratio math    |
+| GET    | /api/v1/evaluation/results   | Last evaluation runs                |
 
 Example:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/query \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: $BASECHATT_API_KEY" \
-  -d '{"query": "What was the Q2 2024 unemployment rate?", "company_ticker": null}'
+  -H "X-API-Key: your-key" \
+  -d '{"query": "What was the Q2 2024 unemployment rate?"}'
 ```
 
 ## Project layout
 
 ```
-apps/api/          FastAPI application
+apps/api/          FastAPI app
 src/basechatt/
-  agents/          Research graph, state, tool prompts
-  chunking/        Structural and semantic chunkers
-  config/          Pydantic settings (env prefix BASECHATT_)
-  database/        SQLAlchemy models + repositories (pgvector)
-  evaluation/      Harness + retrieval metrics
-  ingestion/       Connectors, discovery, parsing, dedup, versioning
-  llm/             Provider factory (groq/openai/anthropic/mock)
-  observability/   Logging, metrics, tracing
-  retrieval/       Dense/lexical search, RRF fusion, reranker
-  security/        API keys, rate limiting, query sanitisation
-  tools/           Financial calculations
-  verification/    Answer verifier + citation persistence
-  workers/         Sync / ingestion / indexing workers
-  cli.py           Command-line interface
-config/            Company universe (companies.yaml)
-datasets/          Evaluation question corpus
-docker/            Image definition
+  agents/          Research graph and prompts
+  chunking/        Text chunkers
+  config/          Settings (env prefix BASECHATT_)
+  database/        Models and queries (pgvector)
+  evaluation/      Test harness
+  ingestion/       Source connectors and parsing
+  llm/             Provider factory (groq, openai, anthropic, mock)
+  observability/   Logging and metrics
+  retrieval/       Search and reranking
+  security/        Auth and rate limits
+  tools/           Financial math
+  verification/    Answer checker
+  workers/         Background jobs
+  cli.py           Command line
+config/            Company list (companies.yaml)
+datasets/          Evaluation questions
+docker/            Docker setup
 ```
 
-## Quality gates
+## Tests and linting
 
 ```bash
-make lint      # ruff check src tests apps/api
-make test      # pytest                       (unit tests, no database needed)
-make typecheck # mypy src                     (optional)
+make lint      # ruff
+make test      # pytest
+make typecheck # mypy
 ```
 
 ## Notes
 
-- The default LLM/embedding provider is **Groq** (free tier, no local
-  downloads). Set `BASECHATT_LLM_PROVIDER=mock` for fully offline test runs.
-- Embedding dimension is fixed at 768 (`BASECHATT_EMBEDDING_DIM`) ΓÇö changing
-  it after initial ingest requires a re-embed of the corpus.
-- Ports are intentionally host-mapped to `5433` (Postgres) and `6380` (Redis)
-  so they don't collide with system services.
+- Default LLM is Groq (free tier). Set `BASECHATT_LLM_PROVIDER=mock` for offline testing.
+- Embedding size is 768. Changing it after ingest needs a re-embed.
+- Postgres runs on port 5433 and Redis on 6380 to avoid clashes with local services.
