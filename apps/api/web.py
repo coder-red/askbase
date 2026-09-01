@@ -59,11 +59,14 @@ _PAGE = """<!doctype html>
   header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 24px;
+    gap: 12px;
+    padding: 12px 0;
     border-bottom: 1px solid var(--border);
     background: var(--panel);
     flex: 0 0 auto;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
   }
   header .brand {
     font-weight: 700;
@@ -71,15 +74,9 @@ _PAGE = """<!doctype html>
     letter-spacing: -0.2px;
   }
   header .brand .accent { color: var(--accent); }
-  header .tag {
-    font-size: 12px;
-    color: var(--muted);
-    border-left: 1px solid var(--border);
-    padding-left: 14px;
-  }
   .badge {
     font-size: 12px;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: 999px;
     border: 1px solid var(--border);
     color: var(--muted);
@@ -88,59 +85,17 @@ _PAGE = """<!doctype html>
   .badge.ok { color: var(--ok); border-color: var(--ok); background: var(--accent-soft); }
   .badge.warn { color: var(--warn); border-color: var(--warn); }
   .badge.err { color: var(--err); border-color: var(--err); }
-  .spacer { flex: 1; }
-  .provider { font-size: 12px; color: var(--muted); }
-  a.link { color: var(--muted); text-decoration: none; font-size: 13px; }
-  a.link:hover { color: var(--text); }
-  main { flex: 1 1 auto; display: flex; min-height: 0; }
-  aside {
-    width: 280px;
-    flex: 0 0 auto;
-    border-right: 1px solid var(--border);
-    background: var(--panel);
-    overflow-y: auto;
-    padding: 16px;
-  }
-  aside h3 {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    margin: 14px 0 8px;
-    font-weight: 600;
-  }
-  aside h3:first-child { margin-top: 0; }
-  aside p.count { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .chip {
-    display: block; width: 100%; text-align: left;
-    background: var(--panel-2); color: var(--text);
-    border: 1px solid transparent; border-radius: 8px;
-    padding: 8px 10px; margin-bottom: 4px; font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.1s, background 0.1s;
-  }
-  .chip:hover { border-color: var(--border-strong); }
-  .chip .t { font-weight: 600; }
-  .chip .s { color: var(--muted); font-size: 11.5px; margin-top: 1px; }
-  .chip.active { border-color: var(--accent); background: var(--accent-soft); }
-  section.chat { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
-  #context {
-    flex: 0 0 auto; padding: 10px 24px; font-size: 13px;
-    color: var(--muted); border-bottom: 1px solid var(--border);
-    background: var(--panel);
-    display: none;
+  main { flex: 1 1 auto; display: flex; min-height: 0; width: 100%; justify-content: center; }
+  section.chat {
+    flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0;
     align-items: center;
-    gap: 8px;
+    width: 100%;
+    max-width: 680px;
   }
-  #context button {
-    margin-left: auto; background: none; border: 1px solid var(--border);
-    color: var(--muted); border-radius: 6px; padding: 2px 10px; cursor: pointer;
-    font-size: 12px;
-  }
-  #context button:hover { color: var(--err); border-color: var(--err); }
-  #messages { flex: 1 1 auto; overflow-y: auto; padding: 24px; }
-  .msg { margin-bottom: 18px; max-width: 760px; }
-  .msg.user { margin-left: auto; }
+  #messages { flex: 1 1 auto; overflow-y: auto; padding: 24px 0; width: 100%; }
+  .msg { width: 100%; margin-bottom: 18px; }
+  .msg.assistant { padding-right: 60px; }
+  .msg.user { padding-left: 60px; }
   .role {
     font-size: 12px;
     color: var(--muted);
@@ -171,19 +126,6 @@ _PAGE = """<!doctype html>
     background: var(--accent-soft);
     border-color: var(--accent);
   }
-  .meta {
-    margin-top: 8px; font-size: 12px; color: var(--muted);
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-  }
-  .meta .pill {
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-  }
-  .meta .pill.ok { color: var(--ok); border-color: var(--ok); background: var(--accent-soft); }
-  .meta .pill.warn { color: var(--warn); border-color: var(--warn); }
-  .meta b { color: var(--text); font-weight: 600; }
   .cites { margin-top: 10px; font-size: 13px; }
   .cites summary {
     color: var(--accent);
@@ -195,7 +137,6 @@ _PAGE = """<!doctype html>
   .cites li { margin-bottom: 4px; }
   .cites a { color: var(--accent); text-decoration: none; word-break: break-all; }
   .cites a:hover { text-decoration: underline; }
-  .error { color: var(--err); }
   .typing {
     color: var(--muted);
     font-style: italic;
@@ -242,7 +183,8 @@ _PAGE = """<!doctype html>
   }
   .example:hover { border-color: var(--accent); background: var(--accent-soft); }
   form {
-    flex: 0 0 auto; display: flex; gap: 10px; padding: 14px 24px;
+    width: 100%;
+    flex: 0 0 auto; display: flex; gap: 10px; padding: 14px 0;
     border-top: 1px solid var(--border); background: var(--panel);
   }
   input[type=text] {
@@ -261,36 +203,24 @@ _PAGE = """<!doctype html>
   button.send:hover { background: var(--accent-2); }
   button.send:disabled { opacity: 0.5; cursor: default; }
   @media (max-width: 720px) {
-    aside { display: none; }
-    header { padding: 12px 16px; }
-    #messages, form, #context { padding-left: 16px; padding-right: 16px; }
+    header { padding: 12px 16px; max-width: 100%; }
+    #messages, form { max-width: 100%; }
+    .msg.assistant { padding-right: 0; }
+    .msg.user { padding-left: 0; }
   }
 </style>
 </head>
 <body>
 <header>
   <div class="brand">Base<span class="accent">Chatt</span></div>
-  <span class="tag">Nigerian financial research</span>
   <span id="health" class="badge">connecting</span>
-  <div class="spacer"></div>
-  <span id="provider" class="provider"></span>
-  <a class="link" href="/docs">API</a>
 </header>
 <main>
-  <aside>
-    <h3>Companies</h3>
-    <p class="count" id="companies-count">loading</p>
-    <div id="companies"></div>
-    <h3>Sources</h3>
-    <p class="count" id="sources-count">loading</p>
-    <div id="sources"></div>
-  </aside>
   <section class="chat">
-    <div id="context"></div>
     <div id="messages">
       <div class="empty" id="empty">
         <h2>Ask about Nigerian finance</h2>
-        <p>Macro data, listed companies, SEC rules, NGX, FMDQ, CBN policy. Pick a ticker or source from the sidebar, or try one of these:</p>
+        <p>Macro data, listed companies, SEC rules, NGX, FMDQ, CBN policy. Try one of these:</p>
         <div class="examples">
           <button class="example" data-q="What was Nigeria's headline inflation rate in December 2024?">What was Nigeria's headline inflation rate in December 2024?</button>
           <button class="example" data-q="What did the MPC decide about the MPR at the last meeting?">What did the MPC decide about the MPR at the last meeting?</button>
@@ -310,13 +240,11 @@ _PAGE = """<!doctype html>
   "use strict";
 
   const $ = (id) => document.getElementById(id);
-  let context = { company: null, source: null };
   let history = JSON.parse(localStorage.getItem("basechatt_history") || "[]");
 
   const esc = (s) => String(s).replace(/[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-  // Tiny markdown renderer: paragraphs, **bold**, *italic*, lists, code.
   function renderMarkdown(text) {
     if (!text) return "";
     let html = esc(text);
@@ -325,7 +253,6 @@ _PAGE = """<!doctype html>
     html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     html = html.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, "$1<em>$2</em>");
     html = html.replace(/\[(\d{1,3})\]/g, '<sup><a href="#cite-$1" class="cite-ref">[$1]</a></sup>');
-    // Lists
     const lines = html.split(/\\n/);
     const out = [];
     let inList = null;
@@ -366,16 +293,10 @@ _PAGE = """<!doctype html>
     if (role === "user") {
       bubble.textContent = text;
     } else {
-      bubble.innerHTML = renderMarkdown(text);
+      bubble.innerHTML = renderMarkdown(text) + (meta || "");
     }
     wrap.appendChild(roleLbl);
     wrap.appendChild(bubble);
-    if (meta) {
-      const m = document.createElement("div");
-      m.className = "meta";
-      m.innerHTML = meta;
-      wrap.appendChild(m);
-    }
     $("messages").appendChild(wrap);
     $("messages").scrollTop = $("messages").scrollHeight;
   }
@@ -403,80 +324,10 @@ _PAGE = """<!doctype html>
       const el = $("health");
       el.textContent = h.database === "ok" ? "online" : "degraded";
       el.className = "badge " + (h.database === "ok" ? "ok" : "warn");
-      $("provider").textContent = h.provider;
     } catch (e) {
       $("health").textContent = "offline";
       $("health").className = "badge err";
     }
-  }
-
-  async function loadCompanies() {
-    try {
-      const data = await fetchJSON("/api/v1/companies");
-      $("companies-count").textContent = data.count + " listed";
-      const box = $("companies");
-      box.textContent = "";
-      for (const c of data.companies) {
-        const b = document.createElement("button");
-        b.className = "chip";
-        b.innerHTML = '<div class="t">' + esc(c.ticker) + '</div><div class="s">' + esc(c.name) + "</div>";
-        b.onclick = () => selectCompany(c, b);
-        box.appendChild(b);
-      }
-    } catch (e) {
-      $("companies-count").textContent = "unavailable";
-    }
-  }
-
-  async function loadSources() {
-    try {
-      const data = await fetchJSON("/api/v1/sources");
-      $("sources-count").textContent = data.count + " sources";
-      const box = $("sources");
-      box.textContent = "";
-      for (const s of data.sources) {
-        const b = document.createElement("button");
-        b.className = "chip";
-        b.innerHTML = '<div class="t">' + esc(s.code) + '</div><div class="s">' + esc(s.name) + "</div>";
-        b.onclick = () => selectSource(s, b);
-        box.appendChild(b);
-      }
-    } catch (e) {
-      $("sources-count").textContent = "unavailable";
-    }
-  }
-
-  function renderContext() {
-    const box = $("context");
-    if (!context.company && !context.source) {
-      box.style.display = "none";
-      box.innerHTML = "";
-      return;
-    }
-    const parts = [];
-    if (context.company) parts.push('<b>' + esc(context.company.ticker) + '</b> ' + esc(context.company.name));
-    if (context.source) parts.push('<b>' + esc(context.source.code) + '</b> ' + esc(context.source.name));
-    box.innerHTML = parts.join(" &middot; ") + '<button id="clear-context">clear</button>';
-    box.style.display = "flex";
-    $("clear-context").onclick = () => {
-      context = { company: null, source: null };
-      document.querySelectorAll(".chip.active").forEach((c) => c.classList.remove("active"));
-      renderContext();
-    };
-  }
-
-  function selectCompany(c, el) {
-    document.querySelectorAll("#companies .chip").forEach((x) => x.classList.remove("active"));
-    el.classList.add("active");
-    context.company = c;
-    renderContext();
-  }
-
-  function selectSource(s, el) {
-    document.querySelectorAll("#sources .chip").forEach((x) => x.classList.remove("active"));
-    el.classList.add("active");
-    context.source = s;
-    renderContext();
   }
 
   function citationsHtml(payload) {
@@ -491,15 +342,6 @@ _PAGE = """<!doctype html>
     }
     list += "</ol>";
     return '<details class="cites"><summary>' + cites.length + ' source' + (cites.length === 1 ? '' : 's') + '</summary>' + list + "</details>";
-  }
-
-  function verdictPill(v) {
-    if (!v) return "";
-    const verdict = v.verified || v.verdict || "unverified";
-    let cls = "pill";
-    if (verdict === "supported" || verdict === "partial") cls += " ok";
-    else if (verdict === "unsupported" || verdict === "unverifiable") cls += " warn";
-    return '<span class="' + cls + '">' + esc(verdict) + '</span>';
   }
 
   const form = $("form");
@@ -520,26 +362,19 @@ _PAGE = """<!doctype html>
 
     sendBtn.disabled = true;
     try {
-      const body = { query: q };
-      if (context.company) body.company_ticker = context.company.ticker;
-      if (context.source) body.source_code = context.source.code;
       const data = await fetchJSON("/api/v1/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ query: q }),
       });
       typing.remove();
-      const meta =
-        '<span class="pill">confidence <b>' + esc(String(data.confidence)) + "</b></span>" +
-        '<span class="pill">' + esc(String(data.elapsed_ms)) + " ms</span>" +
-        verdictPill(data.verdict) +
-        citationsHtml(data);
+      const meta = citationsHtml(data);
       addBubble("assistant", data.answer, meta);
       history.push({ role: "assistant", text: data.answer, meta: meta });
       saveHistory();
     } catch (e) {
       typing.remove();
-      addBubble("assistant", "Error: " + e.message, '<span class="pill err">failed</span>');
+      addBubble("assistant", "Error: " + e.message, "");
     } finally {
       sendBtn.disabled = false;
       input.focus();
@@ -557,8 +392,6 @@ _PAGE = """<!doctype html>
 
   rehydrateHistory();
   loadHealth();
-  loadCompanies();
-  loadSources();
 })();
 </script>
 </body>
