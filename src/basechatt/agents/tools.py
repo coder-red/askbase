@@ -107,8 +107,7 @@ async def answer_node(state: ResearchState) -> ResearchState:
 
     if not evidence:
         state.answer = Answer(
-            text="I could not find sufficient evidence in the indexed corpus or on the web to "
-                 "answer this query confidently.",
+            text="No evidence in the index or web for that yet. Try syncing the sources (`basechatt sync`) or rephrasing the question.",
             is_satisfactory=False,
             evidence=[],
             confidence=0.0,
