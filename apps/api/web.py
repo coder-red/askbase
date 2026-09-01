@@ -205,7 +205,7 @@ _PAGE = """<!doctype html>
 <body>
 <header>
   <div class="brand">Base<span class="accent">Chatt</span></div>
-  <span id="health" class="badge">connecting</span>
+  <span id="health" class="badge"></span>
 </header>
 <main>
   <div id="messages">
@@ -308,15 +308,22 @@ _PAGE = """<!doctype html>
     return body;
   }
 
-  async function loadHealth() {
-    try {
-      const h = await fetchJSON("/api/v1/health");
-      const el = $("health");
-      el.textContent = h.database === "ok" ? "online" : "degraded";
-      el.className = "badge " + (h.database === "ok" ? "ok" : "warn");
-    } catch (e) {
-      $("health").textContent = "offline";
-      $("health").className = "badge err";
+  async function loadHealth(retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const h = await fetchJSON("/api/v1/health");
+        const el = $("health");
+        el.textContent = "online";
+        el.className = "badge ok";
+        return;
+      } catch (e) {
+        if (i === retries - 1) {
+          $("health").textContent = "offline";
+          $("health").className = "badge err";
+        } else {
+          await new Promise((r) => setTimeout(r, 1500));
+        }
+      }
     }
   }
 

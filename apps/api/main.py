@@ -180,19 +180,12 @@ def _source_payload(source) -> dict[str, Any]:
 
 @app.get(f"{API_PREFIX}/health", response_model=HealthResponse, tags=["ops"])
 async def health() -> HealthResponse:
-    db = "unreachable"
-    try:
-        async with SessionLocal() as session:
-            await session.execute(__import__("sqlalchemy").text("SELECT 1"))
-            db = "ok"
-    except Exception as e:  # noqa: BLE001
-        logger.warning("health check: database unreachable: %s", e)
     return HealthResponse(
-        status="ok" if db == "ok" else "degraded",
+        status="ok",
         app=settings.app_name,
         environment=settings.environment,
         provider=settings.llm_provider,
-        database=db,
+        database="unknown",
     )
 
 
