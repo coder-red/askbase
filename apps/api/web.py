@@ -287,7 +287,8 @@ _PAGE = """<!doctype html>
     bubble.innerHTML = renderMarkdown(text) + (meta || "");
     wrap.appendChild(roleLbl);
     wrap.appendChild(bubble);
-    $("inner").appendChild(wrap);
+    const inner = document.querySelector("#messages .inner") || $("messages");
+    inner.appendChild(wrap);
     $("messages").scrollTop = $("messages").scrollHeight;
   }
 
@@ -354,7 +355,7 @@ _PAGE = """<!doctype html>
     const typing = document.createElement("div");
     typing.className = "msg typing";
     typing.textContent = "researching";
-    $("inner").appendChild(typing);
+    (document.querySelector("#messages .inner") || $("messages")).appendChild(typing);
     $("messages").scrollTop = $("messages").scrollHeight;
 
     sendBtn.disabled = true;
@@ -380,7 +381,12 @@ _PAGE = """<!doctype html>
 
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    sendQuery(input.value.trim());
+    const q = input.value.trim();
+    if (q) input.value = "";
+    sendQuery(q).catch((e) => {
+      sendBtn.disabled = false;
+      console.error("sendQuery failed:", e);
+    });
   });
 
   document.querySelectorAll(".example").forEach((b) => {
