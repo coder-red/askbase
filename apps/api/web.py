@@ -355,11 +355,16 @@ _PAGE = """<!doctype html>
     addBubble("user", q);
     history.push({ role: "user", text: q });
 
-    const typing = document.createElement("div");
-    typing.className = "msg typing";
-    typing.textContent = "researching";
-    (document.querySelector("#messages .inner") || $("messages")).appendChild(typing);
-    $("messages").scrollTop = $("messages").scrollHeight;
+    let typing = null;
+    let typingTimeout = null;
+    const showTyping = () => {
+      typing = document.createElement("div");
+      typing.className = "msg typing";
+      typing.textContent = "researching";
+      (document.querySelector("#messages .inner") || $("messages")).appendChild(typing);
+      $("messages").scrollTop = $("messages").scrollHeight;
+    };
+    typingTimeout = setTimeout(showTyping, 500);
 
     sendBtn.disabled = true;
     try {
@@ -374,9 +379,12 @@ _PAGE = """<!doctype html>
       history.push({ role: "assistant", text: data.answer, meta: meta });
       saveHistory();
     } catch (e) {
-      typing.remove();
+      if (typingTimeout) clearTimeout(typingTimeout);
+      if (typing) typing.remove();
       addBubble("assistant", "Error: " + e.message, "");
     } finally {
+      if (typingTimeout) clearTimeout(typingTimeout);
+      if (typing) typing.remove();
       sendBtn.disabled = false;
       input.focus();
     }
