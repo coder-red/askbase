@@ -373,7 +373,8 @@ _PAGE = """<!doctype html>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: q }),
       });
-      typing.remove();
+      if (typingTimeout) clearTimeout(typingTimeout);
+      if (typing) typing.remove();
       const meta = citationsHtml(data);
       addBubble("assistant", data.answer, meta);
       history.push({ role: "assistant", text: data.answer, meta: meta });
