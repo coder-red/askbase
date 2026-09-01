@@ -11,6 +11,7 @@ from dataclasses import asdict
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -44,6 +45,13 @@ app = FastAPI(
     title=f"{settings.app_name} API",
     description="AI financial research agent for Nigeria.",
     version="0.1.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 API_PREFIX = "/api/v1"
 
