@@ -8,6 +8,7 @@ verifiable and reproducible.
 
 from __future__ import annotations
 
+import json
 import re
 import time
 
@@ -29,6 +30,89 @@ PLAN = """1. Retrieve authoritative evidence covering the question's subject and
 2. Form an answer strictly from the evidence.
 3. Verify every cited fact against its source.
 4. State confidence and any uncertainty explicitly."""
+
+SCOPE_CLASSIFIER = """Classify the user's query for BaseChatt (Nigerian financial research).
+
+Return JSON with exactly these keys:
+{
+  "route": "rag" | "fast_path" | "reject",
+  "reason": "short explanation",
+  "quick_answer": "optional: brief answer for fast_path/reject"
+}
+
+Rules:
+- "rag": Nigerian finance (macro, markets, companies, SEC, NGX, FMDQ, CBN, banking, insurance, pensions, tax, fiscal, monetary policy, inflation, FX, bonds, equities, corporate earnings, financial regulation).
+- "fast_path": General knowledge, math, definitions, greetings, meta questions about the bot, simple facts not requiring Nigerian financial sources.
+- "reject": Clearly out of scope (planets, geography, history, sports, entertainment, coding, medical, legal advice, other countries' finance unless directly related to Nigeria).
+
+Examples:
+- "What is Nigeria's inflation rate?" -> {"route": "rag", "reason": "Nigerian macro data"}
+- "What is 2+2?" -> {"route": "fast_path", "reason": "Simple math", "quick_answer": "4"}
+- "What planet are we on?" -> {"route": "reject", "reason": "Out of scope: astronomy", "quick_answer": "I only answer questions about Nigerian finance."}
+- "How do I bake a cake?" -> {"route": "reject", "reason": "Out of scope: cooking", "quick_answer": "I only answer questions about Nigerian finance."}
+- "Hello" -> {"route": "fast_path", "reason": "Greeting", "quick_answer": "Hello! Ask me about Nigerian finance — macro, companies, markets, or regulation."}
+- "What does CBN do?" -> {"route": "rag", "reason": "Nigerian financial regulator"}
+- "Who won the World Cup?" -> {"route": "reject", "reason": "Out of scope: sports", "quick_answer": "I only answer questions about Nigerian finance."}
+"""
+
+async def scope_check_node(state: ResearchState) -> ResearchState:
+    """Classify query: in-scope (RAG), fast-path (general knowledge), or reject (out of scope)."""
+    query = state.query.strip()
+    
+    # Quick heuristic checks first (no LLM call needed)
+    q_lower = query.lower()
+    
+    # Greetings and meta
+    if q_lower in {"hi", "hello", "hey", "help", "what can you do", "who are you"}:
+        state.metadata["route"] = "fast_path"
+        state.metadata["quick_answer"] = "Hello! I'm BaseChatt — ask me about Nigerian finance: macro data, listed companies, SEC rules, NGX, FMDQ, CBN policy."
+        return state
+    
+    # Simple math
+    if re.match(r'^[\d\s+\-*/().]+$', query):
+        state.metadata["route"] = "fast_path"
+        try:
+            # Safe eval for simple arithmetic
+            result = eval(query, {"__builtins__": {}}, {})
+            state.metadata["quick_answer"] = str(result)
+        except Exception:
+            state.metadata["quick_answer"] = "I can't evaluate that expression."
+        return state
+    
+    # Use LLM for classification
+    provider = get_llm_provider()
+    try:
+        resp = await provider.chat(
+            SCOPE_CLASSIFIER,
+            query,
+            temperature=0.0,
+            max_tokens=200,
+            json_mode=True,
+        )
+        classification = json.loads(resp.text)
+        route = classification.get("route", "rag")
+        state.metadata["route"] = route
+        state.metadata["scope_reason"] = classification.get("reason", "")
+        if classification.get("quick_answer"):
+            state.metadata["quick_answer"] = classification["quick_answer"]
+    except Exception as e:
+        logger.warning("Scope classification failed, defaulting to RAG: %s", e)
+        state.metadata["route"] = "rag"
+    
+    return state
+
+
+async def fast_path_node(state: ResearchState) -> ResearchState:
+    """Handle fast-path (general knowledge) or rejection with a quick answer."""
+    quick = state.metadata.get("quick_answer", "I only answer questions about Nigerian finance.")
+    state.answer = Answer(
+        text=quick,
+        is_satisfactory=True,
+        evidence=[],
+        confidence=1.0,
+        elapsed_ms=1.0,
+    )
+    return state
 
 
 def _evidence_from_retrieval(hr) -> list[Evidence]:
