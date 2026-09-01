@@ -45,8 +45,14 @@ _PAGE = """<!doctype html>
       --err: #f87171;
     }
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     background: var(--bg);
@@ -60,66 +66,63 @@ _PAGE = """<!doctype html>
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 0;
+    padding: 12px 20px;
     border-bottom: 1px solid var(--border);
     background: var(--panel);
     flex: 0 0 auto;
-    width: 100%;
-    max-width: 680px;
-    margin: 0 auto;
   }
-  header .brand {
-    font-weight: 700;
-    font-size: 17px;
-    letter-spacing: -0.2px;
-  }
+  header .brand { font-weight: 700; font-size: 17px; letter-spacing: -0.2px; }
   header .brand .accent { color: var(--accent); }
   .badge {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    background: var(--panel-2);
+    font-size: 12px; padding: 3px 8px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted); background: var(--panel-2);
   }
   .badge.ok { color: var(--ok); border-color: var(--ok); background: var(--accent-soft); }
   .badge.warn { color: var(--warn); border-color: var(--warn); }
   .badge.err { color: var(--err); border-color: var(--err); }
-  main { flex: 1 1 auto; display: flex; min-height: 0; width: 100%; justify-content: center; }
-  section.chat {
-    flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0;
-    align-items: center;
-    width: 100%;
-    max-width: 680px;
+  main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
   }
-  #messages { flex: 1 1 auto; overflow-y: auto; padding: 24px 0; width: 100%; }
-  .msg { width: 100%; margin-bottom: 18px; }
-  .msg.assistant { padding-right: 60px; }
-  .msg.user { padding-left: 60px; }
+  #messages {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  #messages::-webkit-scrollbar { display: none; }
+  .inner {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .msg { margin-bottom: 20px; }
   .role {
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-    font-weight: 500;
+    font-size: 12px; color: var(--muted); margin-bottom: 4px; font-weight: 500;
   }
-  .msg.user .role { text-align: right; }
   .bubble {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px 16px;
+    border-radius: 18px;
+    padding: 14px 18px;
     font-size: 14.5px;
-    line-height: 1.6;
+    line-height: 1.65;
   }
   .bubble p { margin: 0 0 8px; }
   .bubble p:last-child { margin-bottom: 0; }
   .bubble ul, .bubble ol { margin: 4px 0 8px 20px; }
   .bubble li { margin-bottom: 2px; }
   .bubble code {
-    background: var(--panel-2);
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 13px;
+    background: var(--panel-2); padding: 1px 6px;
+    border-radius: 4px; font-size: 13px;
   }
   .bubble strong { font-weight: 600; }
   .msg.user .bubble {
@@ -128,24 +131,16 @@ _PAGE = """<!doctype html>
   }
   .cites { margin-top: 10px; font-size: 13px; }
   .cites summary {
-    color: var(--accent);
-    cursor: pointer;
-    font-weight: 500;
-    user-select: none;
+    color: var(--accent); cursor: pointer; font-weight: 500; user-select: none;
   }
   .cites ol { margin: 6px 0 0 20px; color: var(--muted); }
   .cites li { margin-bottom: 4px; }
   .cites a { color: var(--accent); text-decoration: none; word-break: break-all; }
   .cites a:hover { text-decoration: underline; }
   .typing {
-    color: var(--muted);
-    font-style: italic;
-    padding: 8px 0;
+    color: var(--muted); font-style: italic; padding: 8px 0;
   }
-  .typing::after {
-    content: "...";
-    animation: dots 1.5s steps(4, end) infinite;
-  }
+  .typing::after { content: "..."; animation: dots 1.5s steps(4, end) infinite; }
   @keyframes dots {
     0%, 20% { content: ""; }
     40% { content: "."; }
@@ -153,60 +148,57 @@ _PAGE = """<!doctype html>
     80%, 100% { content: "..."; }
   }
   .empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: var(--muted);
-    padding: 40px 20px;
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; color: var(--muted); padding: 40px 20px;
   }
-  .empty h2 {
-    font-size: 22px;
-    color: var(--text);
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
+  .empty h2 { font-size: 22px; color: var(--text); margin-bottom: 8px; font-weight: 600; }
   .empty p { max-width: 440px; margin-bottom: 24px; }
   .examples { display: flex; flex-direction: column; gap: 8px; max-width: 480px; width: 100%; }
   .example {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    cursor: pointer;
-    text-align: left;
-    font-size: 13.5px;
-    color: var(--text);
-    transition: border-color 0.1s, background 0.1s;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; cursor: pointer; text-align: left; font-size: 13.5px;
+    color: var(--text); transition: border-color 0.15s, background 0.15s;
   }
   .example:hover { border-color: var(--accent); background: var(--accent-soft); }
-  form {
-    width: 100%;
-    flex: 0 0 auto; display: flex; gap: 10px; padding: 14px 0;
-    border-top: 1px solid var(--border); background: var(--panel);
+  #form-wrap {
+    flex: 0 0 auto;
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 14px 20px;
+  }
+  #form-wrap form {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   input[type=text] {
     flex: 1; background: var(--bg); color: var(--text);
-    border: 1px solid var(--border-strong); border-radius: 12px;
-    padding: 12px 16px; font-size: 15px; outline: none;
-    transition: border-color 0.1s;
+    border: 1px solid var(--border-strong); border-radius: 24px;
+    padding: 12px 18px; font-size: 15px; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  input[type=text]:focus { border-color: var(--accent); }
+  input[type=text]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  input[type=text]::placeholder { color: var(--muted); }
   button.send {
     background: var(--accent); color: #fff; border: none;
-    border-radius: 12px; padding: 0 22px; font-size: 14px; font-weight: 600;
-    cursor: pointer;
-    transition: background 0.1s;
+    border-radius: 24px; padding: 10px 22px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
   }
   button.send:hover { background: var(--accent-2); }
+  button.send:active { transform: scale(0.97); }
   button.send:disabled { opacity: 0.5; cursor: default; }
-  @media (max-width: 720px) {
-    header { padding: 12px 16px; max-width: 100%; }
-    #messages, form { max-width: 100%; }
-    .msg.assistant { padding-right: 0; }
-    .msg.user { padding-left: 0; }
+  @media (max-width: 600px) {
+    .inner { padding: 0 16px; }
+    #form-wrap { padding: 12px 16px; }
+    .bubble { border-radius: 14px; }
+    input[type=text] { border-radius: 20px; padding: 10px 14px; }
+    button.send { padding: 8px 16px; border-radius: 20px; }
   }
 </style>
 </head>
@@ -216,11 +208,11 @@ _PAGE = """<!doctype html>
   <span id="health" class="badge">connecting</span>
 </header>
 <main>
-  <section class="chat">
-    <div id="messages">
+  <div id="messages">
+    <div class="inner">
       <div class="empty" id="empty">
         <h2>Ask about Nigerian finance</h2>
-        <p>Macro data, listed companies, SEC rules, NGX, FMDQ, CBN policy. Try one of these:</p>
+        <p>Macro data, listed companies, SEC rules, NGX, FMDQ, CBN policy.</p>
         <div class="examples">
           <button class="example" data-q="What was Nigeria's headline inflation rate in December 2024?">What was Nigeria's headline inflation rate in December 2024?</button>
           <button class="example" data-q="What did the MPC decide about the MPR at the last meeting?">What did the MPC decide about the MPR at the last meeting?</button>
@@ -229,11 +221,13 @@ _PAGE = """<!doctype html>
         </div>
       </div>
     </div>
+  </div>
+  <div id="form-wrap">
     <form id="form" autocomplete="off">
       <input id="input" type="text" placeholder="Ask a question" required>
       <button class="send" type="submit">Ask</button>
     </form>
-  </section>
+  </div>
 </main>
 <script>
 (() => {
@@ -290,14 +284,10 @@ _PAGE = """<!doctype html>
     roleLbl.textContent = role === "user" ? "You" : "BaseChatt";
     const bubble = document.createElement("div");
     bubble.className = "bubble";
-    if (role === "user") {
-      bubble.textContent = text;
-    } else {
-      bubble.innerHTML = renderMarkdown(text) + (meta || "");
-    }
+    bubble.innerHTML = renderMarkdown(text) + (meta || "");
     wrap.appendChild(roleLbl);
     wrap.appendChild(bubble);
-    $("messages").appendChild(wrap);
+    $("inner").appendChild(wrap);
     $("messages").scrollTop = $("messages").scrollHeight;
   }
 
@@ -357,7 +347,7 @@ _PAGE = """<!doctype html>
     const typing = document.createElement("div");
     typing.className = "msg typing";
     typing.textContent = "researching";
-    $("messages").appendChild(typing);
+    $("inner").appendChild(typing);
     $("messages").scrollTop = $("messages").scrollHeight;
 
     sendBtn.disabled = true;
