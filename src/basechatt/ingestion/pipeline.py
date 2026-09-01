@@ -38,7 +38,11 @@ DOC_TIMEOUT_SECONDS = 45.0
 
 # Overall per-source sync timeout.  Prevents a source with many slow docs from
 # blocking indefinitely.  A timed-out source is marked FAILED.
-SOURCE_TIMEOUT_SECONDS = 600.0
+SOURCE_TIMEOUT_SECONDS = 480.0
+
+# How many documents to process in parallel.  Balance between speed and avoiding
+# hammering source servers or exhausting CPU during PDF parsing.
+MAX_CONCURRENT_DOCS = 6
 
 
 def _clean_title(title: str, limit: int = 480) -> str:
@@ -67,10 +71,106 @@ async def run_source_sync(session: AsyncSession, source_code: str) -> dict:
         }
 
 
+async def _process_one_doc(
+    session: AsyncSession,
+    doc,
+    connector,
+    source_id: str,
+    added: list,
+    updated: list,
+    failed_ref: dict,
+    sem: asyncio.Semaphore,
+) -> None:
+    async with sem:
+        try:
+            fetched = await connector.fetch(doc)
+        except ConnectorError as e:
+            logger.warning("fetch failed for %s: %s", doc.url, e)
+            failed_ref["n"] += 1
+            return
+        except asyncio.TimeoutError:
+            logger.warning("fetch timed out for %s", doc.url)
+            failed_ref["n"] += 1
+            return
+
+        company = None
+        if doc.company_ticker:
+            from basechatt.database.repositories import CompanyRepository
+
+            company_repo = CompanyRepository(session)
+            company = await company_repo.get_by_ticker(doc.company_ticker)
+
+        decision = await decide(
+            session, source_id, doc.external_id, doc.url, fetched.content
+        )
+
+        if decision.change_type == ChangeType.UNCHANGED:
+            return
+
+        raw_rel = ""
+        try:
+            raw_rel = store_raw(fetched, source_code=connector.code)
+        except Exception as e:  # noqa: BLE001
+            logger.error("failed to store raw for %s: %s", doc.url, e)
+            failed_ref["n"] += 1
+            return
+
+        content_hash = connector.get_content_hash(fetched.content)
+
+        period_start = None
+        period_end = None
+        if doc.published_at:
+            period_start = doc.published_at.date()
+            period_end = doc.published_at.date()
+        elif doc.period_start:
+            period_start = doc.period_start.date()
+            period_end = doc.period_end.date() if doc.period_end else None
+
+        if decision.change_type == ChangeType.NEW:
+            from basechatt.database.repositories import DocumentRepository
+
+            doc_repo = DocumentRepository(session)
+            document = await doc_repo.create(
+                source_id=source_id,
+                document_type=doc.document_type,
+                title=_clean_title(doc.title or "Untitled"),
+                source_url=doc.url,
+                external_id=doc.external_id,
+                content_hash=content_hash,
+                authority_level=doc.authority_level,
+                company_id=company.id if company else None,
+                published_at=doc.published_at,
+                period_start=period_start,
+                period_end=period_end,
+                effective_date=doc.effective_date,
+            )
+            added.append(document.id)
+        else:
+            from basechatt.database.repositories import DocumentRepository
+
+            doc_repo = DocumentRepository(session)
+            document = decision.document
+            await doc_repo.update_hash(document, content_hash)
+            updated.append(document.id)
+
+        version = await create_version(
+            session, document, content_hash, raw_rel, ProcessingStatus.PENDING
+        )
+        await session.flush()
+
+        try:
+            await asyncio.wait_for(
+                process_version(session, version.id),
+                timeout=DOC_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("process_version timed out for %s", doc.url)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("process_version failed for %s: %s", doc.url, e)
+
+
 async def _run_source_sync_inner(session: AsyncSession, source_code: str) -> dict:
     source_repo = SourceRepository(session)
-    company_repo = CompanyRepository(session)
-    doc_repo = DocumentRepository(session)
     sync_repo = SyncRunRepository(session)
     connector = get_connector(source_code)
 
@@ -84,8 +184,6 @@ async def _run_source_sync_inner(session: AsyncSession, source_code: str) -> dic
 
     sync_run = await sync_repo.start(source_code)
 
-    discovered, added, updated, failed = [], 0, 0, 0
-
     try:
         discovered = await connector.discover()
     except ConnectorError as e:
@@ -96,76 +194,37 @@ async def _run_source_sync_inner(session: AsyncSession, source_code: str) -> dic
         await session.commit()
         return {"source": source_code, "status": "failed", "error": str(e)}
 
-    for doc in discovered:
-        try:
-            fetched = await connector.fetch(doc)
-        except ConnectorError as e:
-            logger.warning("fetch failed for %s: %s", doc.url, e)
-            failed += 1
-            continue
+    # Fan out all discovered docs in parallel (bounded by semaphore).
+    # Each task uses its own DB session so concurrent SQLAlchemy work is safe.
+    from basechatt.database.session import SessionLocal
 
-        # Resolve company if this is a company document.
-        company = None
-        if doc.company_ticker:
-            company = await company_repo.get_by_ticker(doc.company_ticker)
+    added_list: list = []
+    updated_list: list = []
+    failed_ref: dict = {"n": 0}
+    sem = asyncio.Semaphore(MAX_CONCURRENT_DOCS)
 
-        decision = await decide(
-            session, source.id, doc.external_id, doc.url, fetched.content
-        )
-
-        if decision.change_type == ChangeType.UNCHANGED:
-            continue
-
-        # Store raw bytes on disk first.
-        raw_rel = ""
-        try:
-            raw_rel = store_raw(fetched, source_code)
-        except Exception as e:  # noqa: BLE001
-            logger.error("failed to store raw for %s: %s", doc.url, e)
-            failed += 1
-            continue
-
-        content_hash = connector.get_content_hash(fetched.content)
-
-        if decision.change_type == ChangeType.NEW:
-            document = await doc_repo.create(
-                source_id=source.id,
-                document_type=doc.document_type,
-                title=_clean_title(doc.title or "Untitled"),
-                source_url=doc.url,
-                external_id=doc.external_id,
-                content_hash=content_hash,
-                authority_level=doc.authority_level,
-                company_id=company.id if company else None,
-                published_at=doc.published_at,
-                period_start=doc.period_start.date() if doc.period_start else None,
-                period_end=doc.period_end.date() if doc.period_end else None,
-                effective_date=doc.effective_date,
+    async def _run_one(d) -> None:
+        async with SessionLocal() as task_session:
+            await _process_one_doc(
+                task_session,
+                d,
+                connector,
+                source.id,
+                added_list,
+                updated_list,
+                failed_ref,
+                sem,
             )
-            added += 1
-        else:  # UPDATED
-            document = decision.document
-            await doc_repo.update_hash(document, content_hash)
-            updated += 1
+            try:
+                await task_session.commit()
+            except Exception as e:  # noqa: BLE001
+                logger.warning("commit failed for %s: %s", d.url, e)
+                await task_session.rollback()
 
-        version = await create_version(
-            session, document, content_hash, raw_rel, ProcessingStatus.PENDING
-        )
-        await session.flush()
-
-        # Process asynchronously but bounded. We inline process to keep the
-        # sync deterministic; a failed version marks itself FAILED.
-        # Wrap with a per-document timeout so a stuck PDF does not block the sync.
-        try:
-            await asyncio.wait_for(
-                process_version(session, version.id),
-                timeout=DOC_TIMEOUT_SECONDS,
-            )
-        except asyncio.TimeoutError:
-            logger.warning("process_version timed out for %s — marking FAILED", doc.url)
-        except Exception as e:  # noqa: BLE001
-            logger.warning("process_version failed for %s: %s", doc.url, e)
-        await session.commit()
+    await asyncio.gather(*[_run_one(d) for d in discovered], return_exceptions=True)
+    added = len(added_list)
+    updated = len(updated_list)
+    failed = failed_ref["n"]
 
     await sync_repo.finish(
         sync_run,
