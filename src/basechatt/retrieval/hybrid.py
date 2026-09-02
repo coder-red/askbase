@@ -71,6 +71,10 @@ async def hybrid_search(
     # 5. Rerank.
     scored = await rerank(fused, query, top_k, session=session)
 
+    # 6. Filter by minimum quality threshold.
+    min_score = cfg.min_retrieval_score
+    scored = [r for r in scored if r.score >= min_score]
+
     sources = list(dict.fromkeys(r.chunk._retrieval.get("source_name", "") for r in scored))
     return HybridResponse(
         query=query,

@@ -43,7 +43,7 @@ Return JSON with exactly these keys:
 Rules:
 - "rag": Nigerian finance (macro, markets, companies, SEC, NGX, FMDQ, CBN, banking, insurance, pensions, tax, fiscal, monetary policy, inflation, FX, bonds, equities, corporate earnings, financial regulation).
 - "fast_path": General knowledge, math, definitions, greetings, meta questions about the bot, simple facts not requiring Nigerian financial sources.
-- "reject": Clearly out of scope (planets, geography, history, sports, entertainment, coding, medical, legal advice, other countries' finance unless directly related to Nigeria).
+- "reject": Clearly out of scope (planets, geography, history, sports, entertainment, coding, medical, legal advice, other countries' finance unless directly related to Nigeria, **investment advice / stock recommendations / portfolio allocation / personal financial advice**).
 
 Examples:
 - "What is Nigeria's inflation rate?" -> {"route": "rag", "reason": "Nigerian macro data"}
@@ -53,6 +53,8 @@ Examples:
 - "Hello" -> {"route": "fast_path", "reason": "Greeting", "quick_answer": "Hello! Ask me about Nigerian finance — macro, companies, markets, or regulation."}
 - "What does CBN do?" -> {"route": "rag", "reason": "Nigerian financial regulator"}
 - "Who won the World Cup?" -> {"route": "reject", "reason": "Out of scope: sports", "quick_answer": "I only answer questions about Nigerian finance."}
+- "What stock should I buy?" -> {"route": "reject", "reason": "Investment advice", "quick_answer": "I can't give investment advice. I can share financial data, earnings, or regulatory filings for Nigerian companies."}
+- "I have 1 million naira, what should I invest in?" -> {"route": "reject", "reason": "Personal financial advice", "quick_answer": "I can't give personal investment advice. I can provide company financials, market data, or SEC rules to support your own research."}
 """
 
 async def scope_check_node(state: ResearchState) -> ResearchState:
@@ -77,6 +79,25 @@ async def scope_check_node(state: ResearchState) -> ResearchState:
             state.metadata["quick_answer"] = str(result)
         except Exception:
             state.metadata["quick_answer"] = "I can't evaluate that expression."
+        return state
+    
+    # Investment advice / stock recommendations -> reject
+    investment_patterns = [
+        r"what stock.*buy",
+        r"which stock.*buy",
+        r"stock.*recommend",
+        r"what.*invest in",
+        r"where.*invest",
+        r"best stock",
+        r"stock to buy",
+        r"investment advice",
+        r"portfolio",
+        r"million naira",
+        r"how to invest",
+    ]
+    if any(re.search(p, q_lower) for p in investment_patterns):
+        state.metadata["route"] = "reject"
+        state.metadata["quick_answer"] = "I can't give investment advice or stock recommendations. I can provide company financials, market data, SEC filings, or macro data to support your own research."
         return state
     
     # Use LLM for classification
