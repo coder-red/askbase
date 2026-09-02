@@ -96,7 +96,7 @@ class Settings(BaseSettings):
     rrf_k: int = 60
     semantic_weight: float = 0.6
     lexical_weight: float = 0.4
-    min_retrieval_score: float = 0.5
+    min_retrieval_score: float = 0.4
 
     #################################################
     # Chunking
