@@ -115,7 +115,7 @@ _PAGE = """<!doctype html>
     padding: 14px 18px;
     font-size: 14.5px;
     line-height: 1.65;
-    max-width: 600px;
+    max-width: 500px;
   }
   .bubble p { margin: 0 0 8px; }
   .bubble p:last-child { margin-bottom: 0; }
@@ -130,7 +130,7 @@ _PAGE = """<!doctype html>
     background: var(--accent-soft);
     border-color: var(--accent);
     margin-left: auto;
-    max-width: 600px;
+    max-width: 500px;
   }
   .cites { margin-top: 10px; font-size: 13px; }
   .cites summary {
